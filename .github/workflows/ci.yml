@@ -32,8 +32,8 @@ jobs:
         run: |
           git tag v$(date +%Y-%m-%d)
           git checkout tags/v$(date +%Y-%m-%d) -b v$(date +%Y-%m-%d)
-          github-release upload --user olljanat --repo traefik-vm --tag v$(date +%Y-%m-%d) --file ./traefik-vm-$(date +%Y-%m-%d).qcow2 --name traefik-vm-$(date +%Y-%m-%d).qcow2
           github-release release --user olljanat --repo traefik-vm --tag v$(date +%Y-%m-%d) --pre-release
+          github-release upload --user olljanat --repo traefik-vm --tag v$(date +%Y-%m-%d) --file ./traefik-vm-$(date +%Y-%m-%d).qcow2 --name traefik-vm-$(date +%Y-%m-%d).qcow2
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
