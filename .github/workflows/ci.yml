@@ -1,0 +1,42 @@
+name: CI
+on:
+  - push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install qemu-utils
+        run: |
+          sudo apt-get update
+          sudo apt-get install qemu-utils
+
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: |
+          sudo ./alpine-make-vm-image \
+              --image-format qcow2 \
+              --image-size 2G \
+              --packages "$(cat vm/packages)" \
+              --script-chroot \
+              traefik-vm-$(date +%Y-%m-%d).qcow2 -- ./vm/configure.sh
+
+      - name: Install github-release
+        run: |
+          sudo wget https://github.com/github-release/github-release/releases/download/v0.10.0/linux-amd64-github-release.bz2 -O /usr/local/bin/github-release.bz2
+          sudo bunzip2 /usr/local/bin/github-release.bz2
+          sudo chmod 0755 /usr/local/bin/github-release
+
+      - name: Publish release
+        run: |
+          github-release upload --user olljanat --repo traefik-vm --tag $(date +%Y-%m-%d) --file ./traefik-vm-$(date +%Y-%m-%d).qcow2 --name traefik-vm-$(date +%Y-%m-%d).qcow2
+          github-release release --user olljanat --repo traefik-vm --tag $(date +%Y-%m-%d) --pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm traefik-vm-$(date +%Y-%m-%d).qcow2
+
